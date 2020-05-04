@@ -1,0 +1,11 @@
+Copyright 2020 Masamichi J. Miyama.
+
+This software contains code derived from D-Wave Systems Inc.
+Specifically, it comes from the following two files included 
+in the D-Wave Ocean SDK by D-Wave Systems Inc.:
+
+- dwave-system/dwave/embedding/transforms.py
+- dwave-system/dwave/system/composites/embedding.py
+
+D-Wave Ocean SDK is released under the Apache License 2.0.
+Copyright 2018 D-Wave Systems Inc.
