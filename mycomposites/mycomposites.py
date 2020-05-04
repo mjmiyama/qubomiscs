@@ -353,7 +353,6 @@ class MinimizeEnergyComposite(dimod.ComposedSampler):
                                            for u in chain}
 
         if self.scale_aware and 'ignored_interactions' in child.parameters:
-
             ignored = []
             for chain in embedding.values():
                 # just use 0 as a null value because we don't actually need
@@ -373,15 +372,16 @@ class MinimizeEnergyComposite(dimod.ComposedSampler):
 
 
         if return_embedding:
-            embedding_context = dict(embedding=embedding,
-                                     chain_break_method=chain_break_method.__name__,
-                                     embedding_parameters=embedding_parameters,
-                                     chain_strength=chain_strength)
-            sampleset.info.update(embedding_context=embedding_context)
+            sampleset.info['embedding_context'].update(
+                embedding_parameters=embedding_parameters,
+                chain_strength=chain_strength)
 
-        if chain_break_fraction and len(sampleset):
-            warninghandler.issue("All samples have broken chains",
-                                 func=lambda: (sampleset.record.chain_break_fraction.all(), None))
+        if len(sampleset):
+            if chain_break_fraction:
+                warninghandler.issue("All samples have broken chains",
+                                     func=lambda: (sampleset.record.chain_break_fraction.all(), None))
+            else:
+                sampleset = sampleset.aggregate()
 
         if warninghandler.action is WarningAction.SAVE:
             # we're done with the warning handler so we can just pass the list
@@ -430,7 +430,6 @@ class LazyFixedMinimizeEnergyComposite(MinimizeEnergyComposite, dimod.Structured
             return None
 
         self._nodelist = nodelist = list(self.adjacency)
-
         # makes it a lot easier for the user if the list can be sorted, so we
         # try
         try:
@@ -674,13 +673,15 @@ class AutoMinimizeEnergyComposite(MinimizeEnergyComposite):
         return super(AutoMinimizeEnergyComposite, self).sample(bqm, **parameters)
 
 def main():
-    sampler = MinimizeEnergyComposite(DWaveSampler())
+    sampler = LazyFixedMinimizeEnergyComposite(DWaveSampler())
+    print(sampler.nodelist)
     h = {'a': -1., 'b': 2, 'c': 1, 'd': -3}
     J = {('a', 'b'): -1.5, ('b', 'c'): -1.0, ('b', 'd'): -0.5, ('c', 'd'): -1.0, ('d', 'a'): -3.0}
-    sampleset = sampler.sample_ising(h, J, return_embedding=True, chain_break_method=MinimizeEnergy, chain_break_fraction=True, num_reads=100)
+    sampleset = sampler.sample_ising(h, J, return_embedding=True, chain_break_method=MinimizeEnergy, chain_break_fraction=False, num_reads=1000)
     print(sampleset.first.energy)
     print(sampleset)
     print(sampleset.info)
+    print(sampler.nodelist)
 
 if __name__ == '__main__':
     main()
