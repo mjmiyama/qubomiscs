@@ -1,2 +1,2 @@
-# dwave-miscs
-Useful miscellaneous code snippets for using the D-Wave System.
+# qubomiscs
+Useful tools for solving QUBO by using D-Wave System QPU, OpenJij and any other tools.
